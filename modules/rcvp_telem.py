@@ -32,7 +32,7 @@
 #
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.0',
+    'metadata_version': '1.1',
     'status': ['stable'],
     'supported_by': 'Rob Martin'
 }
@@ -89,8 +89,11 @@ def evalPorts(sw_ports):
     for s_intf in sw_ports:
         tmp_dict = {}
         if len(s_intf['json']['notifications']) > 0:
-            if s_intf['json']['notifications'][0]['updates']['presence']['value']['Name'] == 'xcvrPresent':
-                tmp_dict[s_intf['item'][1]] = s_intf['json']['notifications'][0]['updates']['actualIdEepromContents']['value']['mediaType']
+            for update in s_intf['json']['notifications']:
+                if 'presence' in update['updates'].keys():
+                    if update['updates']['presence']['value']['Name'] == 'xcvrPresent':
+                        if 'actualIdEepromContents' in update['updates'].keys():
+                            tmp_dict[s_intf['item'][1]] = update['updates']['actualIdEepromContents']['value']['mediaType']
         if len(tmp_dict.keys()) > 0:
             all_list.append({s_intf['item'][0]['serialNumber']:tmp_dict})
     return(all_list)
