@@ -1,9 +1,11 @@
 ---
 - hosts: localhost
-  gather_facts: no
+  gather_facts: yes
   connection: local
   vars:
-    xcvr_eval: "40G-SRBD-UNIV"
+    xcvr_eval: "40G-SRBD-R"
+    date_time: ansible_date_time
+    xcvr_csv: "results/xcvrCheck-{{ ansible_date_time.date }}-{{ ansible_date_time.time }}.csv"
     cvp_server: "cvp-05.rob.lab"
     cvp_user: "cvpadmin"
     cvp_pass: !vault |
@@ -96,8 +98,17 @@
         sw_ports: "{{ port_status.results }}"
       register: port_xcvr
     
+    - name: Create New Result csv file
+      lineinfile:
+        path: "{{ xcvr_csv }}"
+        line: "serialNumber,interface,xcvr"
+        insertafter: EOF
+        create: yes
+
     - name: Check for {{ xcvr_eval }}
-      debug:
-        msg: "{{ item }}"
+      lineinfile:
+        path: "{{ xcvr_csv }}"
+        line: "{{ item.serialNumber }},{{ item.interface }},{{ item.xcvr }}"
+        insertafter: EOF
       loop: "{{ port_xcvr.results }}"
-      when: item.xcvr == xcvr_eval
+      when: item.xcvr != xcvr_eval
