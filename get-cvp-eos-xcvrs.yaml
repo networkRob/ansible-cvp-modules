@@ -47,6 +47,7 @@
       set_fact:
         switch_sn: '{{ switch_sn + [item.serialNumber] }}'
       loop: "{{ switch_list.json.netElementList }}"
+      when: item.serialNumber != ""
 
     - name: Get list of ports
       uri:
