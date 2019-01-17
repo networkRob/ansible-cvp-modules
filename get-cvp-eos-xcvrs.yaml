@@ -3,7 +3,7 @@
   gather_facts: no
   connection: local
   vars:
-    xcvr_eval: "40G-SRBD-R"
+    xcvr_eval: "40G-SRBD-UNIV"
     cvp_server: "cvp-05.rob.lab"
     cvp_user: "cvpadmin"
     cvp_pass: !vault |
