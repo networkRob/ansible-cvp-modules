@@ -32,7 +32,7 @@
 #
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1',
+    'metadata_version': '1.3',
     'status': ['stable'],
     'supported_by': 'Rob Martin'
 }
@@ -93,9 +93,9 @@ def evalPorts(sw_ports):
                 if 'presence' in update['updates'].keys():
                     if update['updates']['presence']['value']['Name'] == 'xcvrPresent':
                         if 'actualIdEepromContents' in update['updates'].keys():
-                            tmp_dict[s_intf['item'][1]] = update['updates']['actualIdEepromContents']['value']['mediaType']
+                            tmp_dict = {"serialNumber":s_intf['item'][0]['serialNumber'],"interface":s_intf['item'][1],"xcvr":update['updates']['actualIdEepromContents']['value']['mediaType']}
         if len(tmp_dict.keys()) > 0:
-            all_list.append({s_intf['item'][0]['serialNumber']:tmp_dict})
+            all_list.append(tmp_dict)
     return(all_list)
 
 def main():

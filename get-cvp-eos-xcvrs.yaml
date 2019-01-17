@@ -3,6 +3,7 @@
   gather_facts: no
   connection: local
   vars:
+    xcvr_eval: "40G-SRBD-R"
     cvp_server: "cvp-05.rob.lab"
     cvp_user: "cvpadmin"
     cvp_pass: !vault |
@@ -94,8 +95,9 @@
         cvp_arg: Eval
         sw_ports: "{{ port_status.results }}"
       register: port_xcvr
-
-    - debug:
+    
+    - name: Check for {{ xcvr_eval }}
+      debug:
         msg: "{{ item }}"
       loop: "{{ port_xcvr.results }}"
-        
+      when: item.xcvr == xcvr_eval
