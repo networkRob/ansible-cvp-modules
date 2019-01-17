@@ -33,7 +33,7 @@
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
-    'status': ['preview'],
+    'status': ['stable'],
     'supported_by': 'Rob Martin'
 }
 

@@ -1,0 +1,100 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars:
+    cvp_server: "cvp-05.rob.lab"
+    cvp_user: "cvpadmin"
+    cvp_pass: !vault |
+              $ANSIBLE_VAULT;1.2;AES256;lab
+              35326661366164343363653763353730643737353634613936616137353739323839373666303833
+              3337323935343266316161393561643563343035346136330a333639363737653865376136656238
+              61323535313464656334626436363365653633623631323164616235326163353936663334656436
+              3838326538303235610a373737333638363938613031373563613336333330376536656466363737
+              6362
+    cvp_auth_url: "https://{{ cvp_server }}/cvpservice/login/authenticate.do" 
+    cvp_protocol: "https"
+    switch_sn: []
+
+  tasks:
+    - name: Setup REST API Session
+      uri:
+       url: "{{ cvp_auth_url }}"
+       method: POST
+       validate_certs: no
+       headers: 
+         Accept: "application/json"
+         Content-Type: "application/json"
+       body_format: "json"
+       body:
+        userId: "{{ cvp_user }}"
+        password: "{{ cvp_pass }}"
+       force_basic_auth: yes
+       status_code: 200,201
+      register: login
+
+    - name: Get list of devices
+      uri:
+        url: "https://{{ cvp_server }}/cvpservice/inventory/getInventory.do?startIndex=0&endIndex=0"
+        method: GET
+        validate_certs: no
+        return_content: yes
+        headers:
+          Cookie: "{{ login.set_cookie }}"
+      register: switch_list
+
+    - name: Get Serial Numbers
+      set_fact:
+        switch_sn: '{{ switch_sn + [item.serialNumber] }}'
+      loop: "{{ switch_list.json.netElementList }}"
+
+    - name: Get list of ports
+      uri:
+        url: "https://{{ cvp_server }}/api/v1/rest/{{ item }}/Sysdb/interface/eth/portid/portId"
+        method: GET
+        validate_certs: no
+        return_content: yes
+        headers:
+          Cookie: "{{ login.set_cookie }}"
+      loop: "{{ switch_sn }}"
+      register: port_list
+
+    - name: Gather All Interfaces
+      rcvp_telem:
+        cvp_arg: Intfs
+        sw_ports: "{{ port_list.results }}"
+      register: all_intfs
+
+    - name: Get status on each port_list
+      uri:
+        url: https://{{ cvp_server }}/api/v1/rest/{{  item.0.serialNumber }}/Sysdb/hardware/archer/xcvr/status/all/{{ item.1 }}
+        method: GET
+        validate_certs: no
+        return_content: yes
+        body_format: "json"
+        headers:
+          Cookie: "{{ login.set_cookie }}"
+      with_subelements:
+        - "{{ all_intfs.results }}"
+        - ports
+      register: port_status
+
+    - name: Logout of CVP
+      uri: 
+        url: "https://{{ cvp_server }}/cvpservice/login/logout.do"
+        method: POST
+        validate_certs: no
+        return_content: yes
+        headers:
+          Cookie: "{{ login.set_cookie }}"
+      
+    - name: Evaluate Switch Port Xcvrs
+      rcvp_telem:
+        cvp_arg: Eval
+        sw_ports: "{{ port_status.results }}"
+      register: port_xcvr
+
+    - debug:
+        msg: "{{ item }}"
+      loop: "{{ port_xcvr.results }}"
+        
