@@ -77,7 +77,7 @@ def parseSwIntfs(sw_ports):
                     tmp_intf = cur_intf[:cur_intf.find('/')]
                 else:
                     tmp_intf = cur_intf
-                if 'Management' not in tmp_intf and tmp_intf not in tmp_list:
+                if tmp_intf.find('Ethernet') == 0:
                     tmp_list.append(tmp_intf)
         tmp_dict['ports'] = tmp_list
         tmp_dict['serialNumber'] = switch['item']
