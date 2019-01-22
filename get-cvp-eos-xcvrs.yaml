@@ -3,8 +3,7 @@
   gather_facts: yes
   connection: local
   vars:
-    xcvr_eval: "40G-SRBD-R"
-    date_time: ansible_date_time
+    xcvr_eval: "40G-SRBD-UNIV"
     xcvr_csv: "results/xcvrCheck-{{ ansible_date_time.date }}-{{ ansible_date_time.time }}.csv"
     cvp_server: "cvp-05.rob.lab"
     cvp_user: "cvpadmin"
@@ -18,6 +17,7 @@
     cvp_auth_url: "https://{{ cvp_server }}/cvpservice/login/authenticate.do" 
     cvp_protocol: "https"
     switch_sn: []
+    switch_hostname: {}
 
   tasks:
     - name: Setup REST API Session
@@ -49,6 +49,7 @@
     - name: Get Serial Numbers
       set_fact:
         switch_sn: '{{ switch_sn + [item.serialNumber] }}'
+        switch_hostname: "{{ switch_hostname | combine({item.serialNumber:item.fqdn}) }}"
       loop: "{{ switch_list.json.netElementList }}"
       when: item.serialNumber != ""
 
@@ -101,14 +102,15 @@
     - name: Create New Result csv file
       lineinfile:
         path: "{{ xcvr_csv }}"
-        line: "serialNumber,interface,xcvr"
+        line: "fqdn,serialNumber,interface,xcvr"
         insertafter: EOF
         create: yes
 
     - name: Check for {{ xcvr_eval }}
       lineinfile:
         path: "{{ xcvr_csv }}"
-        line: "{{ item.serialNumber }},{{ item.interface }},{{ item.xcvr }}"
+        line: "{{ switch_hostname[item.serialNumber] }},{{ item.serialNumber }},{{ item.interface }},{{ item.xcvr }}"
         insertafter: EOF
       loop: "{{ port_xcvr.results }}"
-      when: item.xcvr != xcvr_eval
+      when: item.xcvr == xcvr_eval
+    
