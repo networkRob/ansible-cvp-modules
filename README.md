@@ -9,7 +9,7 @@ The `cvp_pass` can be replaced with an `ansible-vault` encrypted string, or plai
 - `rcvp_telem.py` - Module installed on the Ansible host machine
 #### Tested Versions
 - Ansible: 2.7.x
-- CloudVision Portal: 2018.1.4
+- CloudVision Portal: 2018.1.4 or 2018.2.x
 
 
 ### Ansible Modules
