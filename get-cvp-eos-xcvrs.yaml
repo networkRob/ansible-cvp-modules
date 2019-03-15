@@ -5,7 +5,7 @@
   vars:
     xcvr_eval: "40G-SRBD-UNIV"
     xcvr_csv: "results/xcvrCheck-{{ ansible_date_time.date }}-{{ ansible_date_time.time }}.csv"
-    cvp_server: "cvp-05.rob.lab"
+    cvp_server: "cvp-02.rob.lab"
     cvp_user: "cvpadmin"
     cvp_pass: !vault |
               $ANSIBLE_VAULT;1.2;AES256;lab
@@ -15,6 +15,8 @@
               3838326538303235610a373737333638363938613031373563613336333330376536656466363737
               6362
     cvp_auth_url: "https://{{ cvp_server }}/cvpservice/login/authenticate.do" 
+    cvp_inventory_pre: "https://{{ cvp_server }}/cvpservice/inventory/getInventory.do?startIndex=0&endIndex=0"
+    cvp_inventory: "https://{{ cvp_server }}/cvpservice/inventory/devices"
     cvp_protocol: "https"
     switch_sn: []
     switch_hostname: {}
@@ -35,10 +37,30 @@
        force_basic_auth: yes
        status_code: 200,201
       register: login
+    
+    - name: Get CVP Version
+      uri:
+        url: "https://{{ cvp_server }}/cvpservice/cvpInfo/getCvpInfo.do"
+        method: GET
+        validate_certs: no
+        return_content: yes
+        headers:
+          Cookie: "{{ login.set_cookie }}"
+      register: cvp_version
+
+    - name: Parse CVP Version
+      set_fact:
+        cvp_version_major: "{{ cvp_version.json.version.split('.')[:2] | join('.') }}"
+    
+    - name: Check CVP Version
+      set_fact:
+        cvp_inventory: "{{ cvp_inventory_pre }}"
+      when: 
+        - cvp_version_major == '2018.1'
 
     - name: Get list of devices
       uri:
-        url: "https://{{ cvp_server }}/cvpservice/inventory/getInventory.do?startIndex=0&endIndex=0"
+        url: "{{ cvp_inventory_pre if cvp_version_major == '2018.1' else cvp_inventory }}"
         method: GET
         validate_certs: no
         return_content: yes
@@ -50,7 +72,7 @@
       set_fact:
         switch_sn: '{{ switch_sn + [item.serialNumber] }}'
         switch_hostname: "{{ switch_hostname | combine({item.serialNumber:item.fqdn}) }}"
-      loop: "{{ switch_list.json.netElementList }}"
+      loop: "{{ switch_list.json.netElementList  if cvp_version_major == '2018.1' else switch_list.json }}"
       when: item.serialNumber != ""
 
     - name: Get list of ports
