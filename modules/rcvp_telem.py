@@ -60,7 +60,7 @@ options:
         required: true
 
 author:
-    - Rob Martin (robmartin@arista.com)
+    - Rob Martin (@networkRob)
 '''
 
 from ansible.module_utils.basic import AnsibleModule
