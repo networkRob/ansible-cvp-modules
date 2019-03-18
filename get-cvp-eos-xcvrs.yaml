@@ -3,7 +3,7 @@
   gather_facts: yes
   connection: local
   vars:
-    xcvr_eval: "40G-SRBD-UNIV"
+    xcvr_eval: "40GBASE-UNIV"
     xcvr_csv: "results/xcvrCheck-{{ ansible_date_time.date }}-{{ ansible_date_time.time }}.csv"
     cvp_server: "cvp-02.rob.lab"
     cvp_user: "cvpadmin"
