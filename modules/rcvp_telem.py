@@ -94,6 +94,7 @@ def evalPorts(sw_ports):
                     if update['updates']['presence']['value']['Name'] == 'xcvrPresent':
                         if 'actualIdEepromContents' in update['updates'].keys():
                             tmp_dict = {"serialNumber":s_intf['item'][0]['serialNumber'],"interface":s_intf['item'][1],"xcvr":update['updates']['actualIdEepromContents']['value']['mediaType']}
+                            break
         if len(tmp_dict.keys()) > 0:
             all_list.append(tmp_dict)
     return(all_list)
