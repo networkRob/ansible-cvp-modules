@@ -1,3 +1,4 @@
 *.retry
 src/
 results/*.csv
+.DS_Store
