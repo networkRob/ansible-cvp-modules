@@ -2,3 +2,4 @@
 src/
 results/*.csv
 .DS_Store
+group_vars/all.yml
