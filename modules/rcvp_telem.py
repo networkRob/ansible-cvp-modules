@@ -32,7 +32,7 @@
 #
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.3',
+    'metadata_version': '2.0',
     'status': ['stable'],
     'supported_by': 'Rob Martin'
 }
@@ -60,7 +60,7 @@ options:
         required: true
 
 author:
-    - Rob Martin (robmartin@arista.com)
+    - Rob Martin (@networkRob)
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -90,10 +90,15 @@ def evalPorts(sw_ports):
         tmp_dict = {}
         if len(s_intf['json']['notifications']) > 0:
             for update in s_intf['json']['notifications']:
-                if 'presence' in update['updates'].keys():
-                    if update['updates']['presence']['value']['Name'] == 'xcvrPresent':
-                        if 'actualIdEepromContents' in update['updates'].keys():
-                            tmp_dict = {"serialNumber":s_intf['item'][0]['serialNumber'],"interface":s_intf['item'][1],"xcvr":update['updates']['actualIdEepromContents']['value']['mediaType']}
+                if 'actualIdEepromContents' in update['updates'].keys():
+                    if 'mediaType' in update['updates']['actualIdEepromContents']['value'].keys():
+                        tmp_dict = {"serialNumber":s_intf['item'][0]['serialNumber'],"interface":s_intf['item'][1],"xcvr":update['updates']['actualIdEepromContents']['value']['mediaType']}
+                        # Adding break to end at current Optic/Media Type update
+                        break
+                # Perform a check to see if optic has been removed and interface is empty
+                elif 'presence' in update['updates'].keys():
+                    if update['updates']['presence']['value']['Name'] == 'xcvrNotPresent':
+                        break
         if len(tmp_dict.keys()) > 0:
             all_list.append(tmp_dict)
     return(all_list)
