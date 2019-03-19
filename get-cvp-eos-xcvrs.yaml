@@ -5,15 +5,32 @@
   vars:
     xcvr_eval: "40GBASE-UNIV"
     xcvr_csv: "results/xcvrCheck-{{ ansible_date_time.date }}-{{ ansible_date_time.time }}.csv"
-    cvp_server: "cvp-02.rob.lab"
+    cvp_server: "cvp07.freeblizz.com"
     cvp_user: "cvpadmin"
+    # ansible-vault encrypt_string --name 'cvp_pass' 'somesecret'                       
     cvp_pass: !vault |
-              $ANSIBLE_VAULT;1.2;AES256;lab
-              35326661366164343363653763353730643737353634613936616137353739323839373666303833
-              3337323935343266316161393561643563343035346136330a333639363737653865376136656238
-              61323535313464656334626436363365653633623631323164616235326163353936663334656436
-              3838326538303235610a373737333638363938613031373563613336333330376536656466363737
-              6362
+                     $ANSIBLE_VAULT;1.1;AES256
+                     66623863666566323961393965353661643734626138363232663333623566666230363434343762
+                     3938343233343234313732363464333533383263613134330a366132303130646533366338323637
+                     64653162663763326261333239356165656662333236626333356566646665613630626262323736
+                     6638643230316437340a383534363031633030633963623863396331353666613861353863613566
+                     6631
+    # ansible-vault encrypt_string --name 'email_username' 'someone@gmail.com'                       
+    email_username: !vault |
+                           $ANSIBLE_VAULT;1.1;AES256
+                           62376335343539616663303662303734356232613332326161386463386632653431373832653734
+                           3763633638396433633635643262323164353938303932300a646635623632363537393339333639
+                           66386663376437313434303737643935356165356566623536386564336639376165653738613733
+                           6432616135663232650a323834313435663034313462313364363831366466393466323738366137
+                           35653632363736343366626662616561323366653439646538376361343437376231
+    # ansible-vault encrypt_string --name 'email_password' 'somesecret'                       
+    email_password: !vault |
+                           $ANSIBLE_VAULT;1.1;AES256
+                           65313164306665313432643339663366343933343231643964653034386161346135386636323833
+                           6430303565663533653064393239616534303634616638340a653237333537373430366536343964
+                           36636132393966663263336362393338343465353565343737643538346663623337613431303162
+                           6238383036306433630a623661306338353833333536386562633739373838363864316330613465
+                           62346235323935303032303036653030323539306665636534623130366466373431
     cvp_auth_url: "https://{{ cvp_server }}/cvpservice/login/authenticate.do" 
     cvp_inventory_pre: "https://{{ cvp_server }}/cvpservice/inventory/getInventory.do?startIndex=0&endIndex=0"
     cvp_inventory: "https://{{ cvp_server }}/cvpservice/inventory/devices"
@@ -136,3 +153,17 @@
       loop: "{{ port_xcvr.results }}"
       when: item.xcvr == xcvr_eval
     
+    - name: Sending an e-mail using Gmail SMTP servers
+      mail:
+        host: smtp.gmail.com
+        port: 587
+        username: "{{ email_username }}"
+        password: "{{ email_password }}"
+        to: 
+        - Optics-migration-PM <chines@arista.com>
+        - Rob Martin <robmartin@arista.com>
+        subject: Ansible-XCVR-report
+        body: System {{ ansible_hostname }} XCVR Report information attached.
+        attach:
+        - "{{ xcvr_csv }}"
+      delegate_to: localhost
