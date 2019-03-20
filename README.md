@@ -17,3 +17,20 @@ The `cvp_pass` can be replaced with an `ansible-vault` encrypted string, or plai
 
 #### Installation
 Copy the Ansible module Python files to the `ansible/modules/` directory within the Python `site-packages` directory.
+
+#### NOTE:
+The `group_vars/TEMPLATE_all.yml` file will need to be copied and modified.
+
+```
+cp group_vars/TEMPLATE_all.yml group_vars/all.yml
+```
+
+Then update all of the following fields/parameters within the `groups_vars/all.yml` file:
+- cvp_server:
+- cvp_user:
+- cvp_pass:
+- smtp_server:
+- smtp_port:
+- email_users:
+- email_username:
+- email_password:

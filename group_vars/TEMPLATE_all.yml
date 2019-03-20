@@ -1,0 +1,20 @@
+# Section for CVP Server and Authentication
+cvp_server: "cvp.your-domain.com"
+cvp_user: "cvpadmin"
+
+# ansible-vault encrypt_string --name 'cvp_pass' 'somesecret'                       
+cvp_pass: "changeme"
+
+# SMTP Email Configurations
+smtp_server: "you_smtp_server"
+smtp_port: 587
+
+# Create list of all email contacts to receive the notification
+email_users:
+  - Optics-migration-PM <user@your-domain.com>
+
+# ansible-vault encrypt_string --name 'email_username' 'someone@gmail.com'                       
+email_username: "changeme"
+
+# ansible-vault encrypt_string --name 'email_password' 'somesecret'                       
+email_password: "changeme"
